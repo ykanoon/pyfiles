@@ -8,7 +8,7 @@ import numpy
 import glob
 import math
 import datetime
-
+import calendar
 
 
 def prmdf2prm(prmdf,paraname):
@@ -298,9 +298,78 @@ def makeGNSSdata(dirname,mtname,dstart,dend,rolnum,shnum,mdnum,lgnum,shoff,lgoff
 
 
 
+def leapdaysnum(year):
+
+	if calendar.isleap(year):
+		ydays = 366 
+	else:
+		ydays = 365 
+
+	return(ydays)
+
+
+
+
+def yeardayday(yearday):
+
+	deci = yearday - math.floor(yearday)
+	
+	dt0 = datetime.datetime( math.floor(yearday) ,1,1)	
+
+	yd = deci*leapdaysnum(math.floor(yearday))
+	
+	ydd = dt0 + datetime.timedelta(days= round(yd) )
+	
+	return(ydd)
+
+
+
+
+
+
+def makedgTgn(dirTKS,mtn,dstart,dend):
+	""" 
+	Parameters
+	---------------
+	dirTKS : str
+	dir name for Takagi2019 stacked data
+	mtn : str
+	mt name 3 char, ONT, AZM etc.
+	dstart : 
+
+	"""         
+	#dgTgn = pd.read_table(dirTKS+mtn+'_stackdtr.smo',header=None,delim_whitespace=True, index_col=0)
+	dgTgn = pd.read_table(dirTKS+mtn+'_stackdtr.smo',header=None,delim_whitespace=True)
+	
+	
+	#dgTgn.index.name = 'Date'
+	#dgTgn.columns = ['Strain(10^-6)']
+	dgTgn.columns = ['Date','Strain(10^-6)']
+	
+	for index, row in dgTgn.iterrows():
+		dgTgn.at[index, 'Date'] =  \
+		yeardayday( dgTgn.at[index, 'Date'] ) + \
+		datetime.timedelta(hours=12)
+
+	dgTgn.set_index('Date',inplace=True)
+
+	dgTgn = dgTgn[dstart:dend]
+
+	dates_DF = pd.DataFrame\
+	(index=pd.date_range(dstart,dend,freq='D'))
+	dates_DF.index.name = 'Date'
+	dgTgn = pd.merge(dgTgn,dates_DF,how='outer',\
+	left_index=True, right_index=True)
+
+	return(dgTgn)
+
+
+
+
+
 def makeTiltdata(dirname, mtn, obsn, td, thd, st, ed):
 	"""
-	
+a	
 	Parameters
 	----------
 	obsn : str
