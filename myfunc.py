@@ -9,6 +9,7 @@ import glob
 import math
 import datetime
 import calendar
+import statsmodels.api as sm
 
 
 def prmdf2prm(prmdf,paraname):
@@ -298,6 +299,126 @@ def makeGNSSdata(dirname,mtname,dstart,dend,rolnum,shnum,mdnum,lgnum,shoff,lgoff
 
 
 
+def getGNSSpos(dirname,obs):
+
+	df = pd.read_excel(dirname+'【最新版】観測点情報(GPS).xls', sheet_name='地理院マップシート用観測点',header=1)
+	
+	
+	pos = df[ df['RINEX'] == obs ]
+	
+	
+	pos = pos[ ['緯度（deg）', '経度(deg)'] ].values 
+	
+	return(pos)
+
+
+
+#https://qiita.com/damyarou/items/9cb633e844c78307134a
+def cal_rho(lon_a,lat_a,lon_b,lat_b):
+	ra=6378.140  # equatorial radius (km)
+	rb=6356.755  # polar radius (km)
+	F=(ra-rb)/ra # flattening of the earth
+	rad_lat_a=numpy.radians(lat_a)
+	rad_lon_a=numpy.radians(lon_a)
+	rad_lat_b=numpy.radians(lat_b)
+	rad_lon_b=numpy.radians(lon_b)
+	pa=numpy.arctan(rb/ra*numpy.tan(rad_lat_a))
+	pb=numpy.arctan(rb/ra*numpy.tan(rad_lat_b))
+	xx=numpy.arccos(numpy.sin(pa)*numpy.sin(pb)+numpy.cos(pa)*numpy.cos(pb)*numpy.cos(rad_lon_a-rad_lon_b))
+	c1=(numpy.sin(xx)-xx)*(numpy.sin(pa)+numpy.sin(pb))**2/numpy.cos(xx/2)**2
+	c2=(numpy.sin(xx)+xx)*(numpy.sin(pa)-numpy.sin(pb))**2/numpy.sin(xx/2)**2
+	dr=F/8*(c1-c2)
+	rho=ra*(xx+dr)
+	return rho
+
+
+
+def makestkGNSS(dirname,dstart,dend,dets,dete,rolnum,BLcodes,plotunit):
+
+	dfgn = pd.DataFrame()
+	dates_DF = pd.DataFrame(index=pd.date_range(dstart,dend,freq='D'))
+	dates_DF.index.name = 'Date'
+
+	for codes in BLcodes:
+		tmpfilenames = glob.glob(dirname+'GNSScsv03/*'+codes[0]+'*'+codes[1]+'*')
+		if not tmpfilenames:
+			tmpfilenames = glob.glob(dirname+'GNSScsv03/*'+codes[1]+'*'+codes[0]+'*')
+
+		dftmp = pd.read_csv(tmpfilenames[0],index_col=0,parse_dates=[0])
+
+		cname = codes[0]+'-'+codes[1]
+
+		dftmp.rename(columns={'dll(mm)': \
+		cname},inplace=True)    
+
+		dftmp = dftmp - dftmp.mean()
+	
+		if plotunit == 'strain':
+			pos1 = myfunc.getGNSSpos(dirname,codes[0])
+			pos2 = myfunc.getGNSSpos(dirname,codes[1])
+			rho = myfunc.cal_rho(pos1[0,1],pos1[0,0],pos2[0,1],pos2[0,0])		
+			print(rho)
+	
+			dftmp = (dftmp*10**-3/ ( rho*10**3 ) )*10**6
+
+
+
+		#dftmp['trend'] = numpy.arange(0,len(dftmp))
+		#dftmp['trend'] = dftmp['trend']*(-0.04/365)
+		#dftmp[ cname ] = dftmp[ cname ] - dftmp['trend']			
+		#dftmp.drop('trend',axis=1)
+		print(type(dftmp))
+
+
+
+		dfgn = pd.merge(dfgn,dftmp,how='outer',\
+		left_index=True, right_index=True)
+
+	dfgn = dfgn[dstart:dend]
+
+
+	dfgn = pd.merge(dfgn,dates_DF,how='outer',\
+	left_index=True, right_index=True)
+
+
+	#dfgn = dfgn - dfgn.mean()
+	dfgn = dfgn.rolling(rolnum,center=True).mean()
+	dfgn = dfgn - dfgn.mean()
+	
+	
+	
+
+	#dfgn = dfgn.where( dfgn.diff().diff(-1).abs() < dfgn.std() )	
+
+
+
+	return(dfgn)
+
+
+
+def detrenddaydf(df,dets,dete):
+
+	tm = df
+	dtdf = df
+	
+	tmp = df[dets:dete].interpolate('linear').dropna()
+	
+	x = numpy.arange(0,len(tmp))
+	y = tmp.values	
+	
+	ab = numpy.polyfit(x,y,1)
+	
+
+	dtdf['trend'] = ab[0]*numpy.arange(0,len(df))
+
+	#dtdf['detrend'] =  
+
+	return(dtdf)
+
+
+
+
+
 def leapdaysnum(year):
 
 	if calendar.isleap(year):
@@ -339,6 +460,12 @@ def makedgTgn(dirTKS,mtn,dstart,dend):
 
 	"""         
 	#dgTgn = pd.read_table(dirTKS+mtn+'_stackdtr.smo',header=None,delim_whitespace=True, index_col=0)
+	
+	if not os.path.isfile(dirTKS+mtn+'_stackdtr.smo'):
+		print('No file for:'+dirTKS+mtn+'_stackdtr.smo')
+		dgTgn = pd.DataFrame(index=['Date'], columns=['Strain(10^-6)'])
+		return(dgTgn)
+	
 	dgTgn = pd.read_table(dirTKS+mtn+'_stackdtr.smo',header=None,delim_whitespace=True)
 	
 	
