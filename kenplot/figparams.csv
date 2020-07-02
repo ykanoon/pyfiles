@@ -1,0 +1,16 @@
+mt,chx1,chx2,xptype,xscale,xlim0,xlim1,chy1,chy2,yptype,yscale,ylim0,ylim1,depthc,vmin,vmax
+OSM,miharayamahokusei,kitanoyama,P-P,linear,-1.5,0.5,miharayamahokusei,[],S-P,linear,0.5,1.0,on,0,3
+OSM,miharayamahokusei,senduitonashi,P-P,linear,-1.5,0.5,miharayamahokusei,[],S-P,linear,0.5,1.0,on,0,3
+OSM,miharayamahokusei,futagoyamahokusei,P-P,linear,-1.5,0.5,miharayamahokusei,[],S-P,linear,0.5,1.0,on,0,3
+OSM,miharayamahokusei,motomachi,P-P,linear,-1.5,0.5,miharayamahokusei,[],S-P,linear,0.5,1.0,on,0,3
+OSM,miharayamahokusei,[],S-P,linear,0.5,1.0,miharayamahokusei,motomachi,P-P,linear,-1.0,0.0,on,0,3
+OSM,miharayamahokusei,[],S-P,linear,0.5,1.0,miharayamahokusei,futagoyamahokusei,P-P,linear,-1.0,0.0,on,0,3
+OSM,miharayamahokusei,[],S-P,linear,0.5,1.0,miharayamahokusei,senduitonashi,P-P,linear,-1.0,0.0,on,0,3
+OSM,miharayamahokusei,[],S-P,linear,0.5,1.0,miharayamahokusei,kitanoyama,P-P,linear,-1.0,0.0,on,0,3
+OSM,senduitonashi,motomachi,ratio,log,0.01,100,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,off,0,8
+
+#OSM,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,miharayamahokusei,[],S-P,linear,0.4,1.1,on,0,3
+#OSM,senduitonashi,motomachi,ratio,log,0.01,100,miharayamahokusei,[],S-P,linear,0.4,1.1,on,0,3
+#OSM,miharayamahokusei,[],S-P,linear,0.4,1.1,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,on,0,3
+#OSM,miharayamahokusei,[],S-P,linear,0.4,1.1,senduitonashi,motomachi,ratio,log,0.01,100,on,0,3
+#OSM,senduitonashi,motomachi,ratio,log,0.01,100,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,on,0,3

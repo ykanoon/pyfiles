@@ -1,0 +1,2 @@
+mt,chx1,chx2,xptype,xscale,xlim0,xlim1,chy1,chy2,yptype,yscale,ylim0,ylim1,depthc,vmin,vmax
+OSM,senduitonashi,motomachi,ratio,log,0.01,100,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,off,0,8

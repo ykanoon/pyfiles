@@ -102,7 +102,13 @@ def readhypcEQ(hcpath):
 		key:
 	"""
 	hypEQdf = pd.read_csv(hcpath)
+	
 	hypEQdf.columns = ['y','m','d','Counts']
+	
+	hypEQdf = hypEQdf.dropna()
+	hypEQdf = hypEQdf.astype(int)	
+
+	#print(hypEQdf)
 	hypEQdf['y'] = hypEQdf['y'].astype(str)
 	hypEQdf['m'] = hypEQdf['m'].astype(str)
 	hypEQdf['d'] = hypEQdf['d'].astype(str)
@@ -149,7 +155,7 @@ def EQnumberperdayHyp(dirhyp,mtname,dstart,dend):
 
 	if(os.path.exists( dirhyp+mtname+'dv.csv') ):
 		dfetmp = myfunc.readhypcEQ( dirhyp+mtname+'dv.csv'  )
-
+		
 		dfe = pd.merge(dfe,dfetmp,how='outer',left_index=True, right_index=True)
 		dfe.fillna(0,inplace=True)
 		dfe['Counts'] = dfe['Counts_x']+dfe['Counts_y']
@@ -170,8 +176,10 @@ def EQnumberperdayVOIS(dirvois,mtname,dstart,dend):
 	dfeB = myfunc.readvoisEQ(dirvois+mtname+'_B.csv')
 
 	dfeB = dfeB[dstart:dend]
+	
+	dfeBcum = numpy.cumsum(dfeB)
 
-	return(dfeB)
+	return(dfeB, dfeBcum)
 
 
 
@@ -306,9 +314,11 @@ def getGNSSpos(dirname,obs):
 	sheet_name='地理院マップシート用観測点',header=1)
 	
 	pos = df[ df['RINEX'] == obs ]
-	
 	pos = pos[ ['緯度（deg）', '経度(deg)'] ].values 
-	
+
+	print(obs)
+	print(pos)	
+
 	return(pos)
 
 
@@ -343,11 +353,13 @@ def importGNSS(dirname,dstart,dend,BLcodes,plotunit):
 
 	for codes in BLcodes:
 		tmpfilenames = glob.glob(\
-		dirname+'GNSScsv03/*'+codes[0]+'*'+codes[1]+'*')
+		dirname+'tmpyk/gnssdata20200628/*'+codes[0]+'*'+codes[1]+'*')
 		if not tmpfilenames:
 			tmpfilenames = \
-			glob.glob(dirname+'GNSScsv03/*'+\
+			glob.glob(dirname+'tmpyk/gnssdata20200628/*'+\
 			codes[1]+'*'+codes[0]+'*')
+		print(codes[1]+'*'+codes[0])
+		print(tmpfilenames[0])
 
 		dftmp = pd.read_csv(\
 		tmpfilenames[0],index_col=0,parse_dates=[0])
@@ -381,15 +393,13 @@ def makestkGNSS(dirname,dstart,dend,dets,dete,rolnum,BLcodes,plotunit):
 
 	dfgn = importGNSS(dirname,dstart,dend,BLcodes,plotunit)
 	
-	#dfgn = dfgn.rolling(rolnum,center=True).mean()
 	dfgn = dfgn - dfgn.mean()
-	
-	if dets:
-		dfgn, trenddf= detrenddaydf(dfgn,dets,dete)
 
-	
+	if dets:
+		dfgn, trenddf= detrenddaydf(dfgn,dets,dete)	
+
 	dfgn['stacked'] = dfgn.mean(axis=1)
-	dfgn['stacked'] = dfgn['stacked'].rolling(rolnum,center=True).mean()
+	dfgn['stacked'] = dfgn['stacked'].rolling(rolnum,center=True).mean() 
 
 	return(dfgn)
 

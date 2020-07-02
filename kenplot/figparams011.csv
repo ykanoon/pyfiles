@@ -1,0 +1,9 @@
+mt,chx1,chx2,xptype,xscale,xlim0,xlim1,chy1,chy2,yptype,yscale,ylim0,ylim1,depthc,vmin,vmax
+OSM,miharayamahokusei,[],Max amp,linear,0,5,kitanoyama,[],Max amp,linear,0,1,off,0,8
+OSM,miharayamahokusei,[],Max amp,linear,0,5,futagoyamahokusei,[],Max amp,linear,0,0.5,off,0,8
+OSM,miharayamahokusei,[],Max amp,linear,0,5,senduitonashi,[],Max amp,linear,0,0.5,off,0,8
+OSM,miharayamahokusei,[],Max amp,linear,0,5,motomachi,[],Max amp,linear,0,0.5,off,0,8
+OSM,miharayamahokusei,[],Max amp,linear,0,5,sashikijiokuyama,[],Max amp,linear,0,0.5,off,0,8
+OSM,senduitonashi,motomachi,ratio,log,0.01,100,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,on,0,5
+OSM,senduitonashi,motomachi,ratio,log,0.01,100,kitanoyama,futagoyamahokusei,ratio,log,0.01,100,off,0,8
+
